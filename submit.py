@@ -134,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument('--annopath', default='./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml',
                         help='标签路径, 形如./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml')
     parser.add_argument('--imagesetfile', default='', help='测试集图像名称列表(注意仅为图像名称,不含路径和图像扩展名)')
-    parser.add_argument('--iou-thresh', default=0.7, help='IOU阈值', type=float)
+    parser.add_argument('--iou-thresh', default=0.5, help='IOU阈值', type=float)
 
     parser.add_argument('--num-classes', default=2, type=int, help='print frequency')
     parser.add_argument('--model', default='maskrcnn_resnet50_fpn', help='model')
