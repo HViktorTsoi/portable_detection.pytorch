@@ -1,4 +1,4 @@
-### 训练(支持分布式 可以单机多显卡或者多机)
+## 训练(支持分布式 可以单机多显卡或者多机)
 python -m torch.distributed.launch --nproc_per_node=3
 --use_env train.py --dataset portable --data-path ./data/portable -j 8 --print-freq 20 --model fasterrcnn_resnet50_fpn \
 --batch-size 4 --epoch 25 --lr-steps 0 5 15 --lr 0.003 --lr-gamma 0.7 --aspect-ratio-group-factor 3 --output-dir checkpoints \
