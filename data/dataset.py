@@ -1,14 +1,9 @@
 import os
 import random
 import sys
-
+import transforms as T
 import torch.utils.data as data
 from torchvision.transforms import functional as F
-
-if sys.version_info[0] == 2:
-    pass
-else:
-    pass
 
 import os.path as osp
 import pandas as pd
@@ -201,10 +196,11 @@ class PortableSubmitDataset(data.Dataset):
     充电宝submit数据集
     """
 
-    def __init__(self, imagesetfile):
+    def __init__(self, root, imagesetfile, crop_y_min=300, crop_y_max=1000):
         with open(imagesetfile) as file:
-            self.imageset = [line.replace('\n', '') for line in file.readlines()]
-        print(self.imageset)
+            self.imageset = [osp.join(root, line.replace('\n', '') + '.jpg') for line in file.readlines()]
+        self.crop_y_min, self.crop_y_max = crop_y_min, crop_y_max
+        print('Submission set size: ', len(self.imageset))
 
     def __getitem__(self, index):
         # 返回图像和图像id
@@ -212,10 +208,9 @@ class PortableSubmitDataset(data.Dataset):
         image = Image.open(self.imageset[index])
         image_id = os.path.split(self.imageset[index])[-1]
 
-        # # 裁剪图像白边
-        # crop_y_min, crop_y_max = 300, 1000
-        # width, height = image.size
-        # image = image.crop((0, crop_y_min, width, crop_y_max))
+        # 裁剪图像白边
+        width, height = image.size
+        image = image.crop((0, self.crop_y_min, width, self.crop_y_max))
 
         # 转换为tensor等
         image = F.to_tensor(image)
@@ -240,20 +235,25 @@ def get_portable_dataset(root, image_set, transforms, mode='instances'):
     return voc_dataset
 
 
-def get_portable_submit_dataset(imagesetfile):
-    return PortableSubmitDataset(imagesetfile)
+def get_portable_submit_dataset(root, imagesetfile):
+    return PortableSubmitDataset(root, imagesetfile)
 
 
 if __name__ == '__main__':
-    convert_to_voc()
+    # convert_to_voc()
     # split_dataset()
     # calc_anchors()
-    crop_images()
-    exit()
+    # crop_images()
+    # exit()
+    transforms = T.Compose([
+        T.VocTargetToTorchVision(),
+        T.CropWhiteBorder(),
+        T.ToTensor(),
+    ])
     dataset = get_portable_dataset(
         root='./portable',
         image_set='train',
-        transforms=None
+        transforms=transforms
     )
     print(dataset)
-    print(dataset.__getitem__(0))
+    print(dataset.__getitem__(0)[0].size())
