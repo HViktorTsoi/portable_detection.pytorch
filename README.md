@@ -1,31 +1,11 @@
-# Object detection reference training scripts
+### 训练(支持分布式 可以单机多显卡或者多机)
+python -m torch.distributed.launch --nproc_per_node=3
+--use_env train.py --dataset portable --data-path ./data/portable -j 8 --print-freq 20 --model fasterrcnn_resnet50_fpn \
+--batch-size 4 --epoch 25 --lr-steps 0 5 15 --lr 0.003 --lr-gamma 0.7 --aspect-ratio-group-factor 3 --output-dir checkpoints \
+--resume ./checkpoints/model_5.pth
 
-This folder contains reference training scripts for object detection.
-They serve as a log of how to train specific models, as provide baseline
-training and evaluation scripts to quickly bootstrap research.
-
-Except otherwise noted, all models have been trained on 8x V100 GPUs.
-
-### Faster R-CNN
-```
-python -m torch.distributed.launch --nproc_per_node=8 --use_env train.py\
-    --dataset coco --model fasterrcnn_resnet50_fpn --epochs 26\
-    --lr-steps 16 22 --aspect-ratio-group-factor 3
-```
-
-
-### Mask R-CNN
-```
-python -m torch.distributed.launch --nproc_per_node=8 --use_env train.py\
-    --dataset coco --model maskrcnn_resnet50_fpn --epochs 26\
-    --lr-steps 16 22 --aspect-ratio-group-factor 3
-```
-
-
-### Keypoint R-CNN
-```
-python -m torch.distributed.launch --nproc_per_node=8 --use_env train.py\
-    --dataset coco_kp --model keypointrcnn_resnet50_fpn --epochs 46\
-    --lr-steps 36 43 --aspect-ratio-group-factor 3
-```
-
+## 测试(计算在测试集上的mAP)
+python submit.py --image-root data/portable/VOCdevkit/VOC2012/JPEGImages \
+--imagesetfile /home/hviktortsoi/Code/portable_detection/data/portable/VOCdevkit/VOC2012/ImageSets/Main/test.txt
+--annopath ./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml
+--iou-thresh 0.5 --model-path checkpoints/model_4.pth \
