@@ -1,21 +1,5 @@
-r"""PyTorch Detection Training.
-
-To run in a multi-gpu environment, use the distributed launcher::
-
-    python -m torch.distributed.launch --nproc_per_node=$NGPU --use_env \
-        train.py ... --world-size $NGPU
-
-The default hyperparameters are tuned for training on 8 gpus and 2 images per gpu.
-    --lr 0.02 --batch-size 2 --world-size 8
-If you use different number of gpus, the learning rate should be changed to 0.02/8*$NGPU.
-
-On top of that, for training Faster/Mask R-CNN, the default hyperparameters are
-    --epochs 26 --lr-steps 16 22 --aspect-ratio-group-factor 3
-
-Also, if you train Keypoint R-CNN, the default hyperparameters are
-    --epochs 46 --lr-steps 36 43 --aspect-ratio-group-factor 3
-Because the number of images is smaller in the person keypoint subset of COCO,
-the number of epochs should be adapted so that we have the same number of iterations.
+"""
+Training
 """
 import datetime
 import os
@@ -26,9 +10,11 @@ import torch.utils.data
 from torch import nn
 import torchvision
 import torchvision.models.detection
-import torchvision.models.detection.mask_rcnn
+import torchvision.models.detection.faster_rcnn
+from torchvision.models.detection.rpn import AnchorGenerator
 
 from coco_utils import get_coco, get_coco_kp
+from data.dataset import get_portable_dataset
 
 from group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
 from engine import train_one_epoch, evaluate
@@ -40,7 +26,8 @@ import transforms as T
 def get_dataset(name, image_set, transform, data_path):
     paths = {
         "coco": (data_path, get_coco, 91),
-        "coco_kp": (data_path, get_coco_kp, 2)
+        "coco_kp": (data_path, get_coco_kp, 2),
+        "portable": (data_path, get_portable_dataset, 3)
     }
     p, ds_fn, num_classes = paths[name]
 
@@ -50,6 +37,8 @@ def get_dataset(name, image_set, transform, data_path):
 
 def get_transform(train):
     transforms = []
+    transforms.append(T.VocTargetToTorchVision())
+    transforms.append(T.CropWhiteBorder())
     transforms.append(T.ToTensor())
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
@@ -93,8 +82,19 @@ def main(args):
         collate_fn=utils.collate_fn)
 
     print("Creating model")
-    model = torchvision.models.detection.__dict__[args.model](num_classes=num_classes,
-                                                              pretrained=args.pretrained)
+    # model = torchvision.models.detection.__dict__[args.model](num_classes=num_classes,
+    #                                                           pretrained=args.pretrained)
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
+        # 图像尺寸
+        min_size=700, max_size=1333,
+        # anchor大小
+        rpn_anchor_generator=AnchorGenerator(
+            sizes=((64,), (100,), (128,), (256,), (320,)),
+            aspect_ratios=((0.8, 1.8),) * 5
+        ),
+        num_classes=num_classes,
+        pretrained=args.pretrained
+    )
     model.to(device)
 
     model_without_ddp = model
@@ -112,8 +112,9 @@ def main(args):
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
         model_without_ddp.load_state_dict(checkpoint['model'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
-        lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+        # optimizer.load_state_dict(checkpoint['optimizer'])
+        # lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+        print('Loading Model From: ', args.resume)
 
     if args.test_only:
         evaluate(model, data_loader_test, device=device)
