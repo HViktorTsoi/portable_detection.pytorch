@@ -63,8 +63,8 @@ def main(args):
             outputs = [{k: v.to(torch.device("cpu")) for k, v in t.items()} for t in outputs]
             model_time = time.time() - model_time
 
-            print('|- {:04d} image:{} \ntime:{:.5f}  result:{}  \n'.format(
-                idx, image_ids[0], model_time, outputs[0]['labels']))
+            print('|- {:04d} image:{} \ntime:{:.5f}  result label:{} result score{}  \n'.format(
+                idx, image_ids[0], model_time, outputs[0]['labels'], outputs[0]['scores']))
 
             # 写入result文件
             boxes = outputs[0]['boxes'].int().cpu().numpy()
@@ -72,6 +72,8 @@ def main(args):
                 # 按类别写入
                 _class = outputs[0]['labels'][idx].item()
                 score = outputs[0]['scores'][idx].item()
+                # 对score进行过滤
+                if score < args.score_thresh: continue
                 # 注意这里因为裁剪了白边 需要在结果的bb上加上部白边的偏移crop_y_min
                 result_file[_class].write('{} {} {} {} {} {}\n'.format(
                     image_ids[0][:-4], score,
@@ -135,6 +137,7 @@ if __name__ == "__main__":
                         help='标签路径, 形如./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml')
     parser.add_argument('--imagesetfile', default='', help='测试集图像名称列表(注意仅为图像名称,不含路径和图像扩展名)')
     parser.add_argument('--iou-thresh', default=0.5, help='IOU阈值', type=float)
+    parser.add_argument('--score-thresh', default=0.1, help='bbox置信度阈值,小于此阈值的结果将被过滤掉', type=float)
 
     parser.add_argument('--num-classes', default=2, type=int, help='print frequency')
     parser.add_argument('--model', default='maskrcnn_resnet50_fpn', help='model')
@@ -144,5 +147,6 @@ if __name__ == "__main__":
     parser.add_argument('--model-path', default='', help='resume from checkpoint')
 
     args = parser.parse_args()
+    print(args)
 
     main(args)
