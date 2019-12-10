@@ -1,5 +1,6 @@
 ## 数据集
 需要先把训练集处理成VOC格式,放在data目录下,以数据集名称为"portable"为例,目录结构为
+```markdown
 data
 |-portable
 |--VOCdevkit
@@ -17,7 +18,7 @@ data
 |-----core_battery00000003.jpg
 |-----core_battery00000004.jpg
 |-----...
-
+```
 
 ## 训练(支持分布式 可以单机多显卡或者多机)
 python -m torch.distributed.launch --nproc_per_node=3
