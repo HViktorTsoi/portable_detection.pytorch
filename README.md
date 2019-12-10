@@ -8,4 +8,4 @@ python -m torch.distributed.launch --nproc_per_node=3
 python submit.py --image-root data/portable/VOCdevkit/VOC2012/JPEGImages \
 --imagesetfile /home/hviktortsoi/Code/portable_detection/data/portable/VOCdevkit/VOC2012/ImageSets/Main/test.txt
 --annopath ./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml
---iou-thresh 0.5 --model-path checkpoints/model_4.pth \
+--iou-thresh 0.5 --model-path checkpoints/model_submit.pth \

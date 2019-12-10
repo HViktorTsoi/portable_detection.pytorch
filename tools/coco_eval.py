@@ -1,9 +1,7 @@
 import json
-import tempfile
 
 import numpy as np
 import copy
-import time
 import torch
 import torch._six
 
@@ -13,7 +11,7 @@ import pycocotools.mask as mask_util
 
 from collections import defaultdict
 
-import utils
+from tools import utils
 
 
 class CocoEvaluator(object):

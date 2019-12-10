@@ -1,7 +1,6 @@
 import os
 import random
-import sys
-import transforms as T
+from tools import transforms as T
 import torch.utils.data as data
 from torchvision.transforms import functional as F
 

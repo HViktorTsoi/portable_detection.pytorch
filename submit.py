@@ -11,9 +11,9 @@ import torchvision.models.detection
 import torchvision.models.detection.faster_rcnn
 from torchvision.models.detection.rpn import AnchorGenerator
 
-import utils
+from tools import utils
 from data.dataset import get_portable_submit_dataset
-from voc_eval import voc_eval
+from tools.voc_eval import voc_eval
 
 
 def main(args):
@@ -137,7 +137,7 @@ if __name__ == "__main__":
                         help='标签路径, 形如./data/portable/VOCdevkit/VOC2012/Annotations/{}.xml')
     parser.add_argument('--imagesetfile', default='', help='测试集图像名称列表(注意仅为图像名称,不含路径和图像扩展名)')
     parser.add_argument('--iou-thresh', default=0.5, help='IOU阈值', type=float)
-    parser.add_argument('--score-thresh', default=0.1, help='bbox置信度阈值,小于此阈值的结果将被过滤掉', type=float)
+    parser.add_argument('--score-thresh', default=0.0, help='bbox置信度阈值,小于此阈值的结果将被过滤掉', type=float)
 
     parser.add_argument('--num-classes', default=2, type=int, help='print frequency')
     parser.add_argument('--model', default='maskrcnn_resnet50_fpn', help='model')

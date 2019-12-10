@@ -7,20 +7,18 @@ import time
 
 import torch
 import torch.utils.data
-from torch import nn
 import torchvision
 import torchvision.models.detection
 import torchvision.models.detection.faster_rcnn
 from torchvision.models.detection.rpn import AnchorGenerator
 
-from coco_utils import get_coco, get_coco_kp
+from tools.coco_utils import get_coco, get_coco_kp
 from data.dataset import get_portable_dataset
 
-from group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
-from engine import train_one_epoch, evaluate
+from tools.group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
+from tools.engine import train_one_epoch, evaluate
 
-import utils
-import transforms as T
+from tools import transforms as T, utils
 
 
 def get_dataset(name, image_set, transform, data_path):
