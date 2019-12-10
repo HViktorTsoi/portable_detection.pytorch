@@ -11,7 +11,7 @@ data
 |-----....
 |----ImageSets
 |-----Main
-|------train.txt(里边是不包含图片名的文件列表)
+|------train.txt(里边是不包含路径名和扩展名的图片名列表)
 |------test.txt
 |------val.txt
 |----JPEGImages
